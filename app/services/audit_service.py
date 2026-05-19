@@ -1,8 +1,6 @@
 from app.database import SessionLocal
 from app.models.login_event import LoginEvent
 
-login_events = []
-
 
 def create_login_event_data(event):
 
@@ -17,7 +15,6 @@ def create_login_event_data(event):
     db.add(new_event)
     db.commit()
     db.refresh(new_event)
-
     db.close()
 
     return {
@@ -32,9 +29,7 @@ def create_login_event_data(event):
 def get_all_login_events():
 
     db = SessionLocal()
-
     events = db.query(LoginEvent).all()
-
     db.close()
 
     return events
@@ -84,6 +79,39 @@ def get_suspicious_users_data():
             })
 
     return suspicious_users
+
+
+def get_suspicious_ips_data():
+
+    db = SessionLocal()
+
+    failed_events = db.query(LoginEvent).filter(
+        LoginEvent.status.ilike("FAILED")
+    ).all()
+
+    db.close()
+
+    ip_counts = {}
+
+    for event in failed_events:
+        ip = event.ip_address
+
+        if ip not in ip_counts:
+            ip_counts[ip] = 0
+
+        ip_counts[ip] += 1
+
+    suspicious_ips = []
+
+    for ip, count in ip_counts.items():
+        if count >= 3:
+            suspicious_ips.append({
+                "ip_address": ip,
+                "failed_attempts": count,
+                "risk": "HIGH"
+            })
+
+    return suspicious_ips
 
 
 def get_risk_summary_data():

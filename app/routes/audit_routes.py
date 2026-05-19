@@ -6,6 +6,7 @@ from app.services.audit_service import (
     get_all_login_events,
     get_failed_login_events,
     get_suspicious_users_data,
+    get_suspicious_ips_data,
     get_risk_summary_data,
 )
 
@@ -49,6 +50,11 @@ def get_failed_logins():
 @router.get("/audit/suspicious-users")
 def get_suspicious_users():
     return get_suspicious_users_data()
+
+
+@router.get("/audit/suspicious-ips")
+def get_suspicious_ips():
+    return get_suspicious_ips_data()
 
 
 @router.get("/audit/risk-summary")
