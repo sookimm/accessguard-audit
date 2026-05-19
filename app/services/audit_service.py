@@ -42,37 +42,41 @@ def get_all_login_events():
 
 def get_failed_login_events():
 
-    failed_events = []
+    db = SessionLocal()
 
-    for event in login_events:
+    events = db.query(LoginEvent).filter(
+        LoginEvent.status.ilike("FAILED")
+    ).all()
 
-        if event["status"].upper() == "FAILED":
-            failed_events.append(event)
+    db.close()
 
-    return failed_events
+    return events
 
 
 def get_suspicious_users_data():
 
+    db = SessionLocal()
+
+    failed_events = db.query(LoginEvent).filter(
+        LoginEvent.status.ilike("FAILED")
+    ).all()
+
+    db.close()
+
     failed_counts = {}
 
-    for event in login_events:
+    for event in failed_events:
+        username = event.username
 
-        if event["status"].upper() == "FAILED":
+        if username not in failed_counts:
+            failed_counts[username] = 0
 
-            username = event["username"]
-
-            if username not in failed_counts:
-                failed_counts[username] = 0
-
-            failed_counts[username] += 1
+        failed_counts[username] += 1
 
     suspicious_users = []
 
     for username, count in failed_counts.items():
-
         if count >= 3:
-
             suspicious_users.append({
                 "username": username,
                 "failed_attempts": count,
@@ -84,20 +88,20 @@ def get_suspicious_users_data():
 
 def get_risk_summary_data():
 
-    total_events = len(login_events)
+    db = SessionLocal()
 
-    failed_logins = 0
+    total_events = db.query(LoginEvent).count()
 
-    for event in login_events:
+    failed_logins = db.query(LoginEvent).filter(
+        LoginEvent.status.ilike("FAILED")
+    ).count()
 
-        if event["status"].upper() == "FAILED":
-            failed_logins += 1
+    db.close()
 
     risk_level = "LOW"
 
     if failed_logins >= 3:
         risk_level = "HIGH"
-
     elif failed_logins >= 1:
         risk_level = "MEDIUM"
 
