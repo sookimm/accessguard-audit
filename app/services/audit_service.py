@@ -26,10 +26,35 @@ def create_login_event_data(event):
     }
 
 
-def get_all_login_events():
+def get_all_login_events(
+    status=None,
+    username=None,
+    ip_address=None
+):
 
     db = SessionLocal()
-    events = db.query(LoginEvent).order_by(LoginEvent.id.desc()).all()
+
+    query = db.query(LoginEvent)
+
+    if status:
+        query = query.filter(
+            LoginEvent.status.ilike(status)
+        )
+
+    if username:
+        query = query.filter(
+            LoginEvent.username.ilike(username)
+        )
+
+    if ip_address:
+        query = query.filter(
+            LoginEvent.ip_address.ilike(ip_address)
+        )
+
+    events = query.order_by(
+        LoginEvent.id.desc()
+    ).all()
+
     db.close()
 
     return events

@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from pydantic import BaseModel
 
 from app.services.audit_service import (
@@ -38,8 +38,17 @@ def create_login_event(event: LoginEventRequest):
 
 
 @router.get("/login-events")
-def get_login_events():
-    return get_all_login_events()
+def get_login_events(
+    status: str = Query(None),
+    username: str = Query(None),
+    ip_address: str = Query(None)
+):
+
+    return get_all_login_events(
+        status=status,
+        username=username,
+        ip_address=ip_address
+    )
 
 
 @router.get("/audit/failed-logins")
