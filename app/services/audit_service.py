@@ -1,23 +1,43 @@
+from app.database import SessionLocal
+from app.models.login_event import LoginEvent
+
 login_events = []
 
 
 def create_login_event_data(event):
 
-    new_event = {
-        "id": len(login_events) + 1,
-        "username": event.username,
-        "ip_address": event.ip_address,
-        "status": event.status,
-        "timestamp": __import__("datetime").datetime.now().isoformat()
+    db = SessionLocal()
+
+    new_event = LoginEvent(
+        username=event.username,
+        ip_address=event.ip_address,
+        status=event.status
+    )
+
+    db.add(new_event)
+    db.commit()
+    db.refresh(new_event)
+
+    db.close()
+
+    return {
+        "id": new_event.id,
+        "username": new_event.username,
+        "ip_address": new_event.ip_address,
+        "status": new_event.status,
+        "timestamp": new_event.timestamp
     }
-
-    login_events.append(new_event)
-
-    return new_event
 
 
 def get_all_login_events():
-    return login_events
+
+    db = SessionLocal()
+
+    events = db.query(LoginEvent).all()
+
+    db.close()
+
+    return events
 
 
 def get_failed_login_events():
