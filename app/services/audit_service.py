@@ -29,7 +29,7 @@ def create_login_event_data(event):
 def get_all_login_events():
 
     db = SessionLocal()
-    events = db.query(LoginEvent).all()
+    events = db.query(LoginEvent).order_by(LoginEvent.id.desc()).all()
     db.close()
 
     return events
