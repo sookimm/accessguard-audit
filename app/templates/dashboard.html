@@ -117,6 +117,36 @@
       .high-risk-row {
         background-color: #fff0f0;
       }
+
+      .filter-form {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .filter-form input {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        min-width: 220px;
+      }
+
+      .filter-form button {
+        background-color: #2c3e50;
+        color: white;
+        border: none;
+        padding: 10px 14px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      .reset-link {
+        text-decoration: none;
+        color: #2c3e50;
+        font-weight: bold;
+      }
     </style>
   </head>
 
@@ -144,6 +174,38 @@
           {{ risk_summary.risk_level }}
         </div>
       </div>
+    </div>
+
+    <div class="section">
+      <h2>Recent Login Events</h2>
+
+      <table>
+        <tr>
+          <th>ID</th>
+          <th>Username</th>
+          <th>IP Address</th>
+          <th>Status</th>
+          <th>Timestamp</th>
+        </tr>
+
+        {% for event in recent_events %}
+        <tr>
+          <td>{{ event.id }}</td>
+          <td>{{ event.username }}</td>
+          <td>{{ event.ip_address }}</td>
+
+          <td>
+            <span
+              class="badge {% if event.status == 'FAILED' %} failed {% else %} success {% endif %}"
+            >
+              {{ event.status }}
+            </span>
+          </td>
+
+          <td>{{ event.timestamp }}</td>
+        </tr>
+        {% endfor %}
+      </table>
     </div>
 
     <div class="charts-grid">
@@ -204,8 +266,40 @@
       </table>
     </div>
 
+    <div class="section" id="filter-section">
+      <h2>Filter Login Events</h2>
+
+      <form method="get" action="/dashboard#filter-section" class="filter-form">
+        <input
+          type="text"
+          name="status"
+          placeholder="Status e.g. FAILED"
+          value="{{ selected_status }}"
+        />
+
+        <input
+          type="text"
+          name="username"
+          placeholder="Username e.g. admin01"
+          value="{{ selected_username }}"
+        />
+
+        <input
+          type="text"
+          name="ip_address"
+          placeholder="IP address e.g. 10.0.0.25"
+          value="{{ selected_ip }}"
+        />
+
+        <button type="submit">Apply Filter</button>
+        <a href="/dashboard#filter-section" class="reset-link">Reset</a>
+      </form>
+    </div>
+
+    {% if has_filter %}
+
     <div class="section">
-      <h2>Recent Login Events</h2>
+      <h2>Filtered Results</h2>
 
       <table>
         <tr>
@@ -216,7 +310,8 @@
           <th>Timestamp</th>
         </tr>
 
-        {% for event in events %}
+        {% for event in filtered_events %}
+
         <tr>
           <td>{{ event.id }}</td>
           <td>{{ event.username }}</td>
@@ -232,9 +327,12 @@
 
           <td>{{ event.timestamp }}</td>
         </tr>
+
         {% endfor %}
       </table>
     </div>
+
+    {% endif %}
 
     <script>
       const failureRate =
