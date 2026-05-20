@@ -151,15 +151,31 @@ def get_risk_summary_data():
 
     db.close()
 
+    failure_rate = 0
+
+    if total_events > 0:
+        failure_rate = round(
+            (failed_logins / total_events) * 100,
+            1
+        )
+
+    threat_score = min(
+        int(failure_rate * 1.5),
+        100
+    )
+
     risk_level = "LOW"
 
-    if failed_logins >= 3:
+    if threat_score >= 70:
         risk_level = "HIGH"
-    elif failed_logins >= 1:
+
+    elif threat_score >= 40:
         risk_level = "MEDIUM"
 
     return {
         "total_events": total_events,
         "failed_logins": failed_logins,
+        "failure_rate": failure_rate,
+        "threat_score": threat_score,
         "risk_level": risk_level
     }
